@@ -72,12 +72,39 @@
   .spin { display: inline-block; width: 10px; height: 10px; border: 2px solid var(--accent-soft); border-top-color: var(--accent); border-radius: 50%; animation: r 1s linear infinite; vertical-align: -1px; }
   @keyframes r { to { transform: rotate(360deg); } }
   .empty { color: var(--ink-3); font-size: 13px; }
+  .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 12px; }
+  .head h1 { margin: 0; }
+  .auth { font-size: 12px; color: var(--ink-2); display: flex; align-items: center; gap: 8px; }
+  .authbtn { border: 1px solid var(--line); background: var(--card); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 12px; color: var(--ink-2); }
+  .authbtn:hover { border-color: var(--ink-3); color: var(--ink); }
+  .loginbox { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 24px; text-align: center; }
+  .loginbox h2 { font-size: 16px; margin: 0 0 6px; }
+  .loginbox p { color: var(--ink-2); font-size: 13px; margin: 0 0 16px; }
+  .loginmain { border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-top: 8px; }
+  .loginmain .step { display: flex; align-items: flex-start; gap: 10px; margin: 10px 0; text-align: left; font-size: 13px; }
+  .loginmain .step .n { flex: 0 0 20px; height: 20px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .loginmain code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+  .code { font-size: 36px; font-weight: 700; letter-spacing: 6px; background: var(--surface); padding: 10px 16px; border-radius: 8px; display: inline-block; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .primarybtn { display: inline-block; background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; }
+  .primarybtn:hover { filter: brightness(0.95); }
+  .hidden { display: none !important; }
 </style>
 </head>
 <body>
 <main>
-  <h1>課題1000</h1>
+  <div class="head">
+    <h1>課題1000</h1>
+    <span class="auth" id="authBar"></span>
+  </div>
 
+  <div id="loginGate" class="loginbox hidden">
+    <h2>Codex にログインが必要です</h2>
+    <p>ホワイトボードの読み取りに Codex(ChatGPT アカウント)を使います。<br>下のボタンから、あなたの端末で1回だけログインしてください。</p>
+    <button class="primarybtn" onclick="startLogin()">ログインを開始</button>
+    <div id="loginFlow" class="loginmain hidden"></div>
+  </div>
+
+  <div id="app" class="hidden">
   <div class="hero">
     <div class="num"><span id="total">0</span><small> / 1000 件</small></div>
     <div class="progress"><div id="progressBar" style="width:0%"></div></div>
@@ -108,6 +135,7 @@
     <h2>写真</h2>
     <div id="photos" class="empty">まだ写真がありません</div>
   </section>
+  </div>
 </main>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -237,8 +265,60 @@ async function refresh() {
     render(state);
   } catch {}
 }
+
+// ---- 認証 ----
+let authState = { status: 'unknown' };
+async function refreshAuth() {
+  try {
+    const a = await (await fetch('/api/auth')).json();
+    const wasAuth = authState.status === 'authenticated';
+    authState = a;
+    renderAuth();
+    if (a.status === 'authenticated' && !wasAuth) refresh();
+  } catch {}
+}
+function renderAuth() {
+  const a = authState;
+  const app = $('app'), gate = $('loginGate'), flow = $('loginFlow'), bar = $('authBar');
+  if (a.status === 'authenticated') {
+    app.classList.remove('hidden');
+    gate.classList.add('hidden');
+    const who = a.account?.email ? `${esc(a.account.email)}` : 'ログイン済み';
+    bar.innerHTML = `<span>${who}</span><button class="authbtn" onclick="logout()">ログアウト</button>`;
+  } else {
+    app.classList.add('hidden');
+    gate.classList.remove('hidden');
+    bar.innerHTML = '';
+    if (a.status === 'pending' && a.userCode) {
+      flow.classList.remove('hidden');
+      flow.innerHTML =
+        `<div class="step"><span class="n">1</span><div>下のリンクを開く<br><a class="primarybtn" style="margin-top:8px" href="${esc(a.verificationUrl)}" target="_blank" rel="noopener">${esc(a.verificationUrl)}</a></div></div>` +
+        `<div class="step"><span class="n">2</span><div>次のコードを入力<br><div class="code" style="margin-top:8px">${esc(a.userCode)}</div></div></div>` +
+        `<div class="step"><span class="n">3</span><div>ログインが完了すると自動でこの画面が切り替わります<span class="spin" style="margin-left:6px"></span></div></div>` +
+        `<div style="margin-top:14px"><button class="authbtn" onclick="cancelLogin()">キャンセル</button></div>`;
+    } else {
+      flow.classList.add('hidden');
+      flow.innerHTML = '';
+    }
+  }
+}
+window.startLogin = async () => {
+  await fetch('/api/auth/login', { method: 'POST' });
+  refreshAuth();
+};
+window.cancelLogin = async () => {
+  await fetch('/api/auth/login/cancel', { method: 'POST' });
+  refreshAuth();
+};
+window.logout = async () => {
+  if (!confirm('ログアウトして認証情報をこの端末上から削除しますか?')) return;
+  await fetch('/api/auth/logout', { method: 'POST' });
+  refreshAuth();
+};
+
+refreshAuth();
 refresh();
-setInterval(refresh, 2000);
+setInterval(() => { refreshAuth(); refresh(); }, 2000);
 </script>
 </body>
 </html>

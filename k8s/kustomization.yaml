@@ -1,10 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-# OneThingTsukuba の ghcr パッケージは repo と同じ public 設定のため imagePullSecret 不要。
-# codex 認証だけ SealedSecret で持ち込む(refresh は PVC 側で書き戻す)。
+# codex 認証はコンテナ内で行う(UIから device code フロー、~/.codex は PVC に永続化)。
+# ホスト側からトークンを持ち込まない。
 resources:
 - pvc.yaml
-- sealedsecret-codex-auth.yaml
 - deployment.yaml
 - service.yaml
 images:

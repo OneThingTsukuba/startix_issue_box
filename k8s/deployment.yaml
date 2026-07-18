@@ -45,9 +45,6 @@ spec:
             - name: codex-home
               mountPath: /home/kadai/.codex
               subPath: codex
-            - name: codex-init
-              mountPath: /run/codex-init
-              readOnly: true
           resources:
             requests:
               cpu: 50m
@@ -80,7 +77,3 @@ spec:
         - name: codex-home
           persistentVolumeClaim:
             claimName: startix-issue-box-codex-home
-        - name: codex-init
-          secret:
-            secretName: startix-issue-box-codex-auth
-            defaultMode: 0400
