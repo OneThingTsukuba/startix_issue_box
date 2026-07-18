@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>課題1000</title>
+<style>
+  :root {
+    --ink: #1a1d23; --ink-2: #5c6370; --ink-3: #9aa1ad;
+    --surface: #f7f7f5; --card: #ffffff; --line: #e6e6e2;
+    --accent: #3a5fcd; --accent-soft: #e7ecfa;
+    --ok: #1a7f4e; --err: #b3261e;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Hiragino Sans", sans-serif; background: var(--surface); color: var(--ink); }
+  main { max-width: 880px; margin: 0 auto; padding: 24px 20px 80px; }
+  h1 { font-size: 20px; margin: 0 0 16px; }
+  .hero { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
+  .hero .num { font-size: 56px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+  .hero .num small { font-size: 22px; font-weight: 500; color: var(--ink-2); }
+  .progress { height: 8px; background: var(--accent-soft); border-radius: 4px; margin-top: 14px; overflow: hidden; }
+  .progress > div { height: 100%; background: var(--accent); border-radius: 4px; transition: width .4s; }
+  .hero .sub { margin-top: 8px; font-size: 13px; color: var(--ink-2); }
+  .drop { display: block; border: 2px dashed var(--line); border-radius: 12px; padding: 28px; text-align: center; color: var(--ink-2); background: var(--card); cursor: pointer; margin-bottom: 16px; transition: border-color .15s, background .15s; }
+  .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .drop input { display: none; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 22px; margin-bottom: 16px; }
+  section h2 { font-size: 15px; margin: 0 0 12px; color: var(--ink); }
+  .catrow { display: grid; grid-template-columns: 9em 1fr 3em; align-items: center; gap: 10px; padding: 4px 0; font-size: 14px; }
+  .catrow .name { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .catrow .bar { height: 14px; background: var(--accent); border-radius: 0 4px 4px 0; min-width: 2px; }
+  .catrow .count { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+  .photo { display: flex; gap: 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13px; }
+  .photo:first-of-type { border-top: none; }
+  .photo img { width: 56px; height: 42px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); }
+  .photo .meta { flex: 1; min-width: 0; }
+  .photo .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .photo .stat { color: var(--ink-2); }
+  .photo .stat.err { color: var(--err); }
+  .photo button { border: 1px solid var(--line); background: var(--card); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 12px; color: var(--ink-2); }
+  .photo button:hover { border-color: var(--ink-3); color: var(--ink); }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 12px; }
+  #catChips { display: contents; }
+  .filters input[type=search] { flex: 1; min-width: 180px; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 13px; font-family: inherit; color: var(--ink); background: var(--card); }
+  .filters input[type=search]:focus { outline: none; border-color: var(--accent); }
+  .chip { border: 1px solid var(--line); background: var(--card); border-radius: 14px; padding: 3px 10px; font-size: 12px; cursor: pointer; color: var(--ink-2); font-family: inherit; }
+  .chip:hover { border-color: var(--ink-3); color: var(--ink); }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .tablewrap { overflow-x: auto; }
+  table.issues { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.issues th { text-align: left; font-size: 12px; font-weight: 600; color: var(--ink-2); border-bottom: 1px solid var(--line); padding: 6px 10px; white-space: nowrap; }
+  table.issues td { border-bottom: 1px solid var(--line); padding: 7px 10px; vertical-align: top; }
+  table.issues tr:last-child td { border-bottom: none; }
+  table.issues td.idx { color: var(--ink-3); font-variant-numeric: tabular-nums; width: 2.5em; text-align: right; }
+  table.issues td.src { color: var(--ink-2); font-size: 12px; white-space: nowrap; }
+  .tag { display: inline-block; font-size: 12px; border-radius: 4px; padding: 1px 8px; white-space: nowrap; color: var(--ink); }
+  .filterinfo { font-size: 12px; color: var(--ink-2); margin-bottom: 8px; }
+  @media (max-width: 600px) {
+    main { padding: 14px 10px 60px; }
+    h1 { font-size: 17px; margin-bottom: 12px; }
+    .hero { padding: 14px 16px; }
+    .hero .num { font-size: 38px; }
+    .hero .num small { font-size: 16px; }
+    .drop { padding: 18px 14px; font-size: 13px; }
+    section { padding: 12px 14px; }
+    .catrow { grid-template-columns: 6.5em 1fr 2.2em; gap: 6px; font-size: 13px; }
+    table.issues { min-width: 480px; }
+    table.issues th, table.issues td { padding: 6px 8px; }
+    table.issues td.src { max-width: 8em; overflow: hidden; text-overflow: ellipsis; }
+    .photo img { width: 48px; height: 36px; }
+  }
+  .spin { display: inline-block; width: 10px; height: 10px; border: 2px solid var(--accent-soft); border-top-color: var(--accent); border-radius: 50%; animation: r 1s linear infinite; vertical-align: -1px; }
+  @keyframes r { to { transform: rotate(360deg); } }
+  .empty { color: var(--ink-3); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>課題1000</h1>
+
+  <div class="hero">
+    <div class="num"><span id="total">0</span><small> / 1000 件</small></div>
+    <div class="progress"><div id="progressBar" style="width:0%"></div></div>
+    <div class="sub" id="heroSub"></div>
+  </div>
+
+  <label class="drop" id="drop">
+    ここにホワイトボードの写真をドラッグ&ドロップ(またはクリックして選択)。複数枚OK
+    <input type="file" id="file" accept="image/*" multiple>
+  </label>
+
+  <section>
+    <h2>カテゴリ別の件数</h2>
+    <div id="cats" class="empty">まだ課題がありません</div>
+  </section>
+
+  <section>
+    <h2>課題リスト</h2>
+    <div class="filters">
+      <input type="search" id="search" placeholder="課題を検索…">
+      <span id="catChips"></span>
+    </div>
+    <div class="filterinfo" id="filterInfo"></div>
+    <div class="tablewrap"><div id="list" class="empty">まだ課題がありません</div></div>
+  </section>
+
+  <section>
+    <h2>写真</h2>
+    <div id="photos" class="empty">まだ写真がありません</div>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => s.replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function upload(files) {
+  for (const f of files) {
+    await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'x-filename': encodeURIComponent(f.name), 'content-type': 'application/octet-stream' },
+      body: f,
+    });
+  }
+  refresh();
+}
+
+const drop = $('drop');
+drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', (e) => {
+  e.preventDefault(); drop.classList.remove('over');
+  upload([...e.dataTransfer.files].filter((f) => f.type.startsWith('image/')));
+});
+$('file').addEventListener('change', (e) => { upload([...e.target.files]); e.target.value = ''; });
+
+// Notion風のタグ色(固定カテゴリ)。未知のカテゴリはグレー
+const TAG_COLORS = {
+  '仕事・学業': '#d3e5ef', '生活・家事': '#dbeddb', 'お金': '#fdecc8',
+  '交通・移動': '#e8deee', '健康': '#f5e0e9', '人間関係': '#ffe2dd',
+  '技術・IT': '#d6e4f5', '地域・社会': '#fadec9', '趣味・娯楽': '#eee0da',
+  'その他': '#e3e2e0',
+};
+const tagColor = (c) => TAG_COLORS[c] ?? '#e3e2e0';
+
+const selectedCats = new Set();
+let searchText = '';
+let lastState = { photos: [] };
+
+function render(state) {
+  lastState = state;
+  const photos = state.photos;
+  const issues = photos.flatMap((p) => p.status === 'done' ? p.issues.map((i) => ({ ...i, photo: p })) : []);
+
+  // ヒーロー
+  $('total').textContent = issues.length;
+  $('progressBar').style.width = Math.min(100, issues.length / 10) + '%';
+  const processing = photos.filter((p) => p.status === 'pending' || p.status === 'processing').length;
+  const errs = photos.filter((p) => p.status === 'error').length;
+  $('heroSub').textContent =
+    `写真 ${photos.length} 枚` +
+    (processing ? ` ・ 読み取り中 ${processing} 枚` : '') +
+    (errs ? ` ・ エラー ${errs} 枚` : '');
+
+  // カテゴリ集計
+  const byCat = new Map();
+  for (const i of issues) {
+    if (!byCat.has(i.category)) byCat.set(i.category, []);
+    byCat.get(i.category).push(i);
+  }
+  const cats = [...byCat.entries()].sort((a, b) => b[1].length - a[1].length);
+  const max = cats.length ? cats[0][1].length : 1;
+
+  $('cats').className = cats.length ? '' : 'empty';
+  $('cats').innerHTML = cats.length ? cats.map(([name, arr]) =>
+    `<div class="catrow"><span class="name" title="${esc(name)}">${esc(name)}</span>` +
+    `<div><div class="bar" style="width:${Math.max(2, arr.length / max * 100)}%"></div></div>` +
+    `<span class="count">${arr.length}</span></div>`
+  ).join('') : 'まだ課題がありません';
+
+  // フィルタチップ(カテゴリ)
+  $('catChips').innerHTML = cats.map(([name, arr]) =>
+    `<button class="chip ${selectedCats.has(name) ? 'on' : ''}" onclick="toggleCat('${esc(name)}')">${esc(name)} ${arr.length}</button>`
+  ).join(' ');
+
+  // テーブル(フィルタ適用)
+  const q = searchText.trim().toLowerCase();
+  const filtered = issues.filter((i) =>
+    (selectedCats.size === 0 || selectedCats.has(i.category)) &&
+    (!q || i.text.toLowerCase().includes(q))
+  );
+  const filterOn = selectedCats.size > 0 || q;
+  $('filterInfo').textContent = filterOn ? `${filtered.length} / ${issues.length} 件を表示中` : '';
+
+  $('list').className = filtered.length ? '' : 'empty';
+  $('list').innerHTML = filtered.length ?
+    `<table class="issues"><thead><tr><th></th><th>課題</th><th>カテゴリ</th><th>写真</th></tr></thead><tbody>` +
+    filtered.map((i, n) =>
+      `<tr><td class="idx">${n + 1}</td><td>${esc(i.text)}</td>` +
+      `<td><span class="tag" style="background:${tagColor(i.category)}">${esc(i.category)}</span></td>` +
+      `<td class="src">${esc(i.photo.originalName)}</td></tr>`
+    ).join('') + '</tbody></table>'
+    : (issues.length ? '条件に一致する課題がありません' : 'まだ課題がありません');
+
+  // 写真リスト
+  const STAT = {
+    pending: '<span class="spin"></span> 待機中',
+    processing: '<span class="spin"></span> Codex で読み取り中…',
+  };
+  $('photos').className = photos.length ? '' : 'empty';
+  $('photos').innerHTML = photos.length ? [...photos].reverse().map((p) => {
+    const stat = p.status === 'done' ? `${p.issues.length} 件読み取り`
+      : p.status === 'error' ? `<span class="err">エラー: ${esc(p.error ?? '')}</span>`
+      : STAT[p.status];
+    const retry = p.status === 'error' ? `<button onclick="retryPhoto('${p.id}')">再試行</button>` : '';
+    return `<div class="photo"><img src="/uploads/${p.file}" alt="">` +
+      `<div class="meta"><div class="name">${esc(p.originalName)}</div><div class="stat ${p.status === 'error' ? 'err' : ''}">${stat}</div></div>` +
+      `${retry}<button onclick="deletePhoto('${p.id}')">削除</button></div>`;
+  }).join('') : 'まだ写真がありません';
+}
+
+window.toggleCat = (name) => {
+  selectedCats.has(name) ? selectedCats.delete(name) : selectedCats.add(name);
+  render(lastState);
+};
+$('search').addEventListener('input', (e) => { searchText = e.target.value; render(lastState); });
+
+window.retryPhoto = async (id) => { await fetch(`/api/photos/${id}/retry`, { method: 'POST' }); refresh(); };
+window.deletePhoto = async (id) => {
+  if (!confirm('この写真と読み取った課題を削除しますか?')) return;
+  await fetch(`/api/photos/${id}`, { method: 'DELETE' });
+  refresh();
+};
+
+async function refresh() {
+  try {
+    const state = await (await fetch('/api/state')).json();
+    render(state);
+  } catch {}
+}
+refresh();
+setInterval(refresh, 2000);
+</script>
+</body>
+</html>

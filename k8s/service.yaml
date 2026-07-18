@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: startix-issue-box
+  namespace: startix-issue-box
+  labels:
+    app: startix-issue-box
+# LAN 内アクセス。<nodeIP>:3220 で開ける。cloudflared 経由の外部公開はしない。
+spec:
+  type: LoadBalancer
+  selector:
+    app: startix-issue-box
+  ports:
+    - name: http
+      port: 3220
+      targetPort: 8080

@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: startix-issue-box-data
+  namespace: startix-issue-box
+# 写真(uploads/)と読み取り結果(data.json)の保存先。
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: startix-issue-box-codex-home
+  namespace: startix-issue-box
+# codex CLI の $HOME/.codex 用。auth.json が refresh でこの中に書き戻される。
+# 初回は entrypoint が SealedSecret から seed する。
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 200Mi

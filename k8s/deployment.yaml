@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: startix-issue-box
+  namespace: startix-issue-box
+  labels:
+    app: startix-issue-box
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # PVC が ReadWriteOnce のため
+  selector:
+    matchLabels:
+      app: startix-issue-box
+  template:
+    metadata:
+      labels:
+        app: startix-issue-box
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: startix-issue-box
+          image: ghcr.io/onethingtsukuba/startix-issue-box:latest # tag は kustomization images で CI が sha 上書き
+          env:
+            - name: PORT
+              value: "8080"
+            - name: HOST
+              value: 0.0.0.0
+            - name: DATA_DIR
+              value: /data
+            - name: HOME
+              value: /home/kadai
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: codex-home
+              mountPath: /home/kadai/.codex
+              subPath: codex
+            - name: codex-init
+              mountPath: /run/codex-init
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: startix-issue-box-data
+        - name: codex-home
+          persistentVolumeClaim:
+            claimName: startix-issue-box-codex-home
+        - name: codex-init
+          secret:
+            secretName: startix-issue-box-codex-auth
+            defaultMode: 0400
