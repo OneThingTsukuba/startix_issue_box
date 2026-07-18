@@ -3,7 +3,7 @@
 「課題を1000個挙げる」イベント用のホワイトボード写真集計サービス。
 写真をブラウザに投げると、Codex(`codex app-server`、ChatGPT ログイン認証)が課題を文字起こしし、カテゴリ分けして件数を集計する。
 
-k8s-homelab の1マイクロサービスとして稼働(LAN 限定、`<nodeIP>:3220`)。
+k8s-homelab の1マイクロサービスとして稼働(LAN 限定、`<nodeIP>:6220`)。
 
 ## 構成
 
@@ -13,7 +13,7 @@ k8s-homelab の1マイクロサービスとして稼働(LAN 限定、`<nodeIP>:3
 - `index.html` — UI(モバイル対応、Notion 風の課題テーブル+フィルタ)
 - `Dockerfile` — Node 22 + `@openai/codex` グローバル導入 + 非rootユーザ
 - `docker-entrypoint.sh` — PVC 上に `~/.codex/auth.json` が無ければ Secret から seed
-- `k8s/` — Deployment / Service(LB:3220) / PVC(data 5Gi + codex-home 200Mi) / SealedSecret
+- `k8s/` — Deployment / Service(LB:6220) / PVC(data 5Gi + codex-home 200Mi) / SealedSecret
 - `.github/workflows/build.yml` — push で ghcr にビルド→`k8s/kustomization.yaml` に sha 書き戻し
 
 ## デプロイ
