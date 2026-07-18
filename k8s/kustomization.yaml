@@ -10,4 +10,4 @@ resources:
 images:
 - name: ghcr.io/onethingtsukuba/startix-issue-box
   newName: ghcr.io/onethingtsukuba/startix-issue-box
-  newTag: latest
+  newTag: 124b8f361479
