@@ -97,24 +97,23 @@
     <span class="auth" id="authBar"></span>
   </div>
 
-  <div id="loginGate" class="loginbox hidden">
-    <h2>Codex にログインが必要です</h2>
-    <p>ホワイトボードの読み取りに Codex(ChatGPT アカウント)を使います。<br>下のボタンから、あなたの端末で1回だけログインしてください。</p>
-    <button class="primarybtn" onclick="startLogin()">ログインを開始</button>
-    <div id="loginFlow" class="loginmain hidden"></div>
-  </div>
-
-  <div id="app" class="hidden">
   <div class="hero">
     <div class="num"><span id="total">0</span><small> / 1000 件</small></div>
     <div class="progress"><div id="progressBar" style="width:0%"></div></div>
     <div class="sub" id="heroSub"></div>
   </div>
 
-  <label class="drop" id="drop">
+  <label class="drop hidden" id="drop">
     ここにホワイトボードの写真をドラッグ&ドロップ(またはクリックして選択)。複数枚OK
     <input type="file" id="file" accept="image/*" multiple>
   </label>
+
+  <div id="loginBox" class="loginbox hidden">
+    <h2>アップロードには Codex のログインが必要です</h2>
+    <p>写真を読み取るために Codex(ChatGPT アカウント)を使います。<br>下のボタンから、あなたの端末で1回だけログインしてください。<br>すでに読み取り済みのリストはログインなしで見られます。</p>
+    <button class="primarybtn" onclick="startLogin()">ログインを開始</button>
+    <div id="loginFlow" class="loginmain hidden"></div>
+  </div>
 
   <section>
     <h2>カテゴリ別の件数</h2>
@@ -135,7 +134,6 @@
     <h2>写真</h2>
     <div id="photos" class="empty">まだ写真がありません</div>
   </section>
-  </div>
 </main>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -279,16 +277,18 @@ async function refreshAuth() {
 }
 function renderAuth() {
   const a = authState;
-  const app = $('app'), gate = $('loginGate'), flow = $('loginFlow'), bar = $('authBar');
+  const drop = $('drop'), box = $('loginBox'), flow = $('loginFlow'), bar = $('authBar');
   if (a.status === 'authenticated') {
-    app.classList.remove('hidden');
-    gate.classList.add('hidden');
+    drop.classList.remove('hidden');
+    box.classList.add('hidden');
+    flow.classList.add('hidden');
+    flow.innerHTML = '';
     const who = a.account?.email ? `${esc(a.account.email)}` : 'ログイン済み';
     bar.innerHTML = `<span>${who}</span><button class="authbtn" onclick="logout()">ログアウト</button>`;
   } else {
-    app.classList.add('hidden');
-    gate.classList.remove('hidden');
-    bar.innerHTML = '';
+    drop.classList.add('hidden');
+    box.classList.remove('hidden');
+    bar.innerHTML = `<button class="authbtn" onclick="startLogin()">ログイン</button>`;
     if (a.status === 'pending' && a.userCode) {
       flow.classList.remove('hidden');
       flow.innerHTML =
